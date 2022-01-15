@@ -23,7 +23,7 @@ from util.add_watermark import watermark_image
 from util.norm import SpecificNorm
 from parsing_model.model import BiSeNet
 from pathlib import Path
-
+from random import shuffle
 def lcm(a, b): return abs(a * b) / fractions.gcd(a, b) if a and b else 0
 
 transformer_Arcface = transforms.Compose([
@@ -108,7 +108,7 @@ def dofsmage(srcfileps,targetfps):
             net.eval()
         else:
             net =None
-        outputdir = Path(r'D:\paradise\stuff\simswappg\outputmages')
+        outputdir = Path(r'D:\Developed\FaceSwapExperimental\TestResult')
         opt.output_path = str(outputdir / (Path(srcfileps).stem + Path(targetfps).stem + '.jpg'))
         
         reverse2wholeimage(b_align_crop_tenor_list, swap_result_list, b_mat_list, crop_size, img_b_whole, logoclass, \
@@ -121,13 +121,26 @@ def dofsmage(srcfileps,targetfps):
 if __name__ == '__main__':
     # srcimgdir = Path(r'D:\paradise\stuff\Essence\FS\all\Devi\Frames\New folder')
     srcimgdir = Path(r'D:\paradise\stuff\simswappg\srcs')
+    # srcimgdir = Path(r'D:\paradise\stuff\simswappg\srcs\gudcele')
+    # srcimgdir = Path(r'D:\paradise\stuff\Essence\FS\all\Devi\DeviKa\1')
+    # srcimgdir = Path(r'D:\paradise\stuff\Essence\FS\CelebCombination\Nawabi')
+    # srcimgdir = Path(r'D:\paradise\stuff\Essence\FS\all\Sluts')
     # dstvideodir = Path(r'D:\paradise\stuff\simswappg\trialTargets')
-    # dstvideodir = Path(r'D:\paradise\stuff\new\imageset2\Hustler Jessa Rhodes - Busty Young Wives - x94 - June 23 2021')
-    dstvideodir = Path(r'D:\paradise\stuff\Images\Champions')
-
+    dstvideodir = Path(r'D:\paradise\stuff\new\imageset2\Hustler Jessa Rhodes - Busty Young Wives - x94 - June 23 2021')
+    # dstvideodir = Path(r'D:\paradise\stuff\Images\Champions')
+    # dstvideodir = Path(r'D:\paradise\stuff\Images\Best\too hot')
+    # dstvideodir = Path(r'C:\GalImgs\imageSet\ Valentina Nappi Collection')
+    # dstvideodir = Path(r'D:\paradise\stuff\new\PVD')
+    testsrc_times = -1
+    randsrc = True
+    randdst = True
     # targetfile = open('donedata.csv','w+')
-
-    for imgFiles in srcimgdir.glob('*.jpg'):
+    srcFileList = [x for x in srcimgdir.glob('*.jpg')]
+    dstFileList = [x for x in dstvideodir.glob('*.jpg')]
+    if randsrc:
+        shuffle(srcFileList)    
+        
+    for imgFiles in srcFileList:
       parentdir = imgFiles.parent / 'FsRecords'
       parentdir.mkdir(exist_ok=True)  
       dbfilename = parentdir / (imgFiles.stem+'.csv')
@@ -137,12 +150,21 @@ if __name__ == '__main__':
       # import pdb;pdb.set_trace()
       donedata.close()
       setfcontent = set(fcontent)
-      for vidFIle in dstvideodir.glob('*.jpg'):
+      tsc = testsrc_times
+      if randdst:
+          shuffle(dstFileList)
+      for vidFIle in dstFileList:
+          if tsc == 0:
+            break
           if str(vidFIle) not in setfcontent:
-            dofsmage(str(imgFiles), str(vidFIle))
+            try:
+                dofsmage(str(imgFiles), str(vidFIle))
+            except:
+                print(str(imgFiles), str(vidFIle))
             donedata = open(dbfilename, 'a+')
             donedata.write('\n'+ str(vidFIle)) 
             donedata.close()
+            tsc -= 1
             # sleep(1000)
           else:
             print('already done')

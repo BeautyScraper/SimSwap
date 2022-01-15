@@ -1,1 +1,1 @@
-conda activate simswap && python Sophiemage.py
+conda activate simswap && cmd /k python Sophiemage.py

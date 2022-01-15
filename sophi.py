@@ -21,6 +21,7 @@ from util.videoswap import video_swap
 import os
 from pathlib import Path
 from time import sleep
+from random import shuffle
 
 def lcm(a, b): return abs(a * b) / fractions.gcd(a, b) if a and b else 0
 
@@ -61,7 +62,7 @@ def spicoutvid(inimgpath,vpath):
 
     with torch.no_grad():
         pic_a = inimgpath
-        outpath = Path(r'D:\paradise\stuff\simswappg\outputs')
+        outpath = Path(r'D:\Developed\VFS\RandyVideo\xdivision')
         opt.output_path = str(outpath / (Path(pic_a).stem + Path(vpath).name))
         # img_a = Image.open(pic_a).convert('RGB')
         img_a_whole = cv2.imread(pic_a)
@@ -94,22 +95,41 @@ if __name__ == '__main__':
     dstvideodir = Path(r'D:\paradise\stuff\simswappg\targets')
 
     # targetfile = open('donedata.csv','w+')
-
-    for imgFiles in srcimgdir.glob('*.jpg'):
-      dbfilename = imgFiles.parent/(imgFiles.stem+'.csv')
+    testsrc_times = -1
+    randsrc = True
+    randdst = True
+    # targetfile = open('donedata.csv','w+')
+    srcFileList = [x for x in srcimgdir.glob('*.jpg')]
+    dstFileList = [x for x in dstvideodir.glob('*.mp4')]
+    if randsrc:
+        shuffle(srcFileList)    
+        
+    for imgFiles in srcFileList:
+      parentdir = imgFiles.parent / 'VFsRecords'
+      parentdir.mkdir(exist_ok=True)  
+      dbfilename = parentdir / (imgFiles.stem+'.csv')
       donedata = open(dbfilename, 'a+') 
       donedata.seek(0,0)  
       fcontent = [x.strip() for x in donedata.readlines()]
       # import pdb;pdb.set_trace()
       donedata.close()
       setfcontent = set(fcontent)
-      for vidFIle in dstvideodir.glob('*.mp4'):
+      tsc = testsrc_times
+      if randdst:
+          shuffle(dstFileList)
+      for vidFIle in dstFileList:
+          if tsc == 0:
+            break
           if str(vidFIle) not in setfcontent:
-            spicoutvid(str(imgFiles), str(vidFIle))
+            try:
+                spicoutvid(str(imgFiles), str(vidFIle))
+            except:
+                print(str(imgFiles), str(vidFIle))
             donedata = open(dbfilename, 'a+')
             donedata.write('\n'+ str(vidFIle)) 
             donedata.close()
+            tsc -= 1
             # sleep(1000)
           else:
             print('already done')
-            continue
+            continue       
