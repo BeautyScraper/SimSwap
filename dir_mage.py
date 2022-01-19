@@ -18,10 +18,9 @@ from models.models import create_model
 from options.test_options import TestOptions
 from insightface_func.face_detect_crop_single import Face_detect_crop
 from util.videoswap import video_swap
+from util.imgdirswap import img_dir_swap
 import os
 from pathlib import Path
-from time import sleep
-from random import shuffle
 
 def lcm(a, b): return abs(a * b) / fractions.gcd(a, b) if a and b else 0
 
@@ -40,7 +39,11 @@ transformer_Arcface = transforms.Compose([
 #         transforms.Normalize([-0.485, -0.456, -0.406], [1, 1, 1])
 #     ])
 
-def spicoutvid(inimgpath,vpath):
+indir = r'D:\paradise\stuff\simswappg\srcs'
+outDir = r'C:\Games\sacred2'
+targetDir = r'D:\paradise\stuff\Images\Best\too hot'
+
+if __name__ == '__main__':
     opt = TestOptions().parse()
 
     start_epoch, epoch_iter = 1, 0
@@ -55,15 +58,13 @@ def spicoutvid(inimgpath,vpath):
         mode = 'None'
     model = create_model(opt)
     model.eval()
-
     
+
     app = Face_detect_crop(name='antelope', root='./insightface_func/models')
     app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640),mode=mode)
-
     with torch.no_grad():
-        pic_a = inimgpath
-        outpath = Path(r'D:\Developed\VFS\RandyVideo\xdivision')
-        opt.output_path = str(outpath / (Path(pic_a).stem + Path(vpath).name))
+        pic_apath = next(Path(indir).glob('*.jpg'))
+        pic_a = str(pic_apath)
         # img_a = Image.open(pic_a).convert('RGB')
         img_a_whole = cv2.imread(pic_a)
         img_a_align_crop, _ = app.get(img_a_whole,crop_size)
@@ -87,49 +88,6 @@ def spicoutvid(inimgpath,vpath):
         latend_id = model.netArc(img_id_downsample)
         latend_id = F.normalize(latend_id, p=2, dim=1)
 
-        video_swap(vpath, latend_id, model, app, opt.output_path,temp_results_dir=opt.temp_path,\
+        img_dir_swap(targetDir, latend_id, model, app, pic_apath.name,temp_results_dir=outDir,\
             no_simswaplogo=opt.no_simswaplogo,use_mask=opt.use_mask,crop_size=crop_size)
 
-if __name__ == '__main__':
-    srcimgdir = Path(r'D:\paradise\stuff\simswappg\srcs')
-    dstvideodir = Path(r'D:\paradise\stuff\simswappg\targets')
-
-    # targetfile = open('donedata.csv','w+')
-    testsrc_times = -1
-    randsrc = True
-    randdst = True
-    # targetfile = open('donedata.csv','w+')
-    srcFileList = [x for x in srcimgdir.glob('*.jpg')]
-    dstFileList = [x for x in dstvideodir.glob('*.mp4')]
-    if randsrc:
-        shuffle(srcFileList)    
-        
-    for imgFiles in srcFileList:
-      parentdir = imgFiles.parent / 'VFsRecords'
-      parentdir.mkdir(exist_ok=True)  
-      dbfilename = parentdir / (imgFiles.stem+'.csv')
-      donedata = open(dbfilename, 'a+') 
-      donedata.seek(0,0)  
-      fcontent = [x.strip() for x in donedata.readlines()]
-      # import pdb;pdb.set_trace()
-      donedata.close()
-      setfcontent = set(fcontent)
-      tsc = testsrc_times
-      if randdst:
-          shuffle(dstFileList)
-      for vidFIle in dstFileList:
-          if tsc == 0:
-            break
-          if str(vidFIle) not in setfcontent:
-            try:
-                spicoutvid(str(imgFiles), str(vidFIle))
-            except:
-                print(str(imgFiles), str(vidFIle))
-            donedata = open(dbfilename, 'a+')
-            donedata.write('\n'+ str(vidFIle)) 
-            donedata.close()
-            tsc -= 1
-            sleep(1000)
-          else:
-            print('already done')
-            continue       

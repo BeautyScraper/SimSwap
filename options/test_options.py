@@ -31,8 +31,9 @@ class TestOptions(BaseOptions):
         self.parser.add_argument("--temp_path", type=str, default='./temp_results', help="path to save temporarily images")
         self.parser.add_argument("--output_path", type=str, default='./output/', help="results path")
         self.parser.add_argument('--id_thres', type=float, default=0.03, help='how many test images to run')
-        self.parser.add_argument('--no_simswaplogo', action='store_true', help='Remove the watermark')
+        self.parser.add_argument('--no_simswaplogo', action='store_false', help='Remove the watermark')
         self.parser.add_argument('--use_mask', action='store_true', help='Use mask for better result')
+        # self.parser.add_argument('--crop_size', type=int, default=512, help='Crop of size of input image')
         self.parser.add_argument('--crop_size', type=int, default=224, help='Crop of size of input image')
         
         self.isTrain = False

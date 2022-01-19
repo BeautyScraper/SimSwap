@@ -152,6 +152,7 @@ class fsModel(BaseModel):
         loss_G_GAN, loss_G_GAN_Feat, loss_G_VGG, loss_G_ID, loss_G_Rec = 0,0,0,0,0
 
         img_fake = self.netG.forward(img_att, latent_id)
+        # import pdb;pdb.set_trace()
         if not self.isTrain:
             return img_fake
         img_fake_downsample = self.downsample(img_fake)
@@ -185,7 +186,6 @@ class fsModel(BaseModel):
         pred_fake = [fea1_fake, fea2_fake]
         fea_fake = [fea1_fake, fea2_fake]
         loss_G_GAN = self.criterionGAN(pred_fake, True, for_discriminator=False)
-
         # GAN feature matching loss
         n_layers_D = 4
         num_D = 2

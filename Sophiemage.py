@@ -94,7 +94,7 @@ def dofsmage(srcfileps,targetfps):
         for b_align_crop in img_b_align_crop_list:
 
             b_align_crop_tenor = _totensor(cv2.cvtColor(b_align_crop,cv2.COLOR_BGR2RGB))[None,...].cuda()
-
+            # import pdb;pdb.set_trace()
             swap_result = model(None, b_align_crop_tenor, latend_id, None, True)[0]
             swap_result_list.append(swap_result)
             b_align_crop_tenor_list.append(b_align_crop_tenor)
@@ -117,20 +117,34 @@ def dofsmage(srcfileps,targetfps):
         print(' ')
 
         print('************ Done ! ************')
+        # import pdb;pdb.set_trace()
         
 if __name__ == '__main__':
     # srcimgdir = Path(r'D:\paradise\stuff\Essence\FS\all\Devi\Frames\New folder')
     srcimgdir = Path(r'D:\paradise\stuff\simswappg\srcs')
+    # srcimgdir = Path(r'D:\paradise\stuff\Essence\FS\CelebCombination\ShreeDevis\shreedevi')
+    # srcimgdir = Path(r'D:\paradise\stuff\Essence\FS\CelebCombination\Deols\esha')
+    # srcimgdir = Path(r'D:\paradise\stuff\Essence\FS\SachMe')
     # srcimgdir = Path(r'D:\paradise\stuff\simswappg\srcs\gudcele')
     # srcimgdir = Path(r'D:\paradise\stuff\Essence\FS\all\Devi\DeviKa\1')
     # srcimgdir = Path(r'D:\paradise\stuff\Essence\FS\CelebCombination\Nawabi')
     # srcimgdir = Path(r'D:\paradise\stuff\Essence\FS\all\Sluts')
     # dstvideodir = Path(r'D:\paradise\stuff\simswappg\trialTargets')
-    dstvideodir = Path(r'D:\paradise\stuff\new\imageset2\Hustler Jessa Rhodes - Busty Young Wives - x94 - June 23 2021')
+    # dstvideodir = Path(r'D:\paradise\stuff\new\imageset2\Hustler Jessa Rhodes - Busty Young Wives - x94 - June 23 2021')
+    # dstvideodir = Path(r'D:\paradise\stuff\Images\Best\softcore')
     # dstvideodir = Path(r'D:\paradise\stuff\Images\Champions')
+    dstvideodir = Path(r'D:\paradise\stuff\new\imageset\Killergram Black cock perfection - starring Harleyy Heart - published 11 December 2021 - number of photos 83')
+    # dstvideodir = Path(r'C:\GalImgs\BabesImgs')
     # dstvideodir = Path(r'D:\paradise\stuff\Images\Best\too hot')
+    # dstvideodir = Path(r'D:\paradise\stuff\new\pvd2\PVD2')
+    # dstvideodir = Path(r'D:\paradise\stuff\Images\Best\powerGirls')
+    # dstvideodir = Path(r'D:\paradise\stuff\Images\Chudvati')
+    # dstvideodir = Path(r'D:\paradise\stuff\new\imageset2\LegalPorno Nadja Lapiedra 2 On 1 BBC ATM First Time DAP No Pussy Gapes Creie Swallow GL496 - 19 Jun')
     # dstvideodir = Path(r'C:\GalImgs\imageSet\ Valentina Nappi Collection')
     # dstvideodir = Path(r'D:\paradise\stuff\new\PVD')
+    # dstvideodir = Path(r'D:\paradise\stuff\new\pvd2\extractedVideo\xDivision')
+    # dstvideodir = Path(r'D:\paradise\stuff\new\pvd2')
+    # dstvideodir = Path(r'D:\paradise\stuff\new\imageset2\Brazzers Kirsten Price Nikki Benz - Can You Get Me Off x916')
     testsrc_times = -1
     randsrc = True
     randdst = True
@@ -161,6 +175,7 @@ if __name__ == '__main__':
                 dofsmage(str(imgFiles), str(vidFIle))
             except:
                 print(str(imgFiles), str(vidFIle))
+                continue
             donedata = open(dbfilename, 'a+')
             donedata.write('\n'+ str(vidFIle)) 
             donedata.close()
