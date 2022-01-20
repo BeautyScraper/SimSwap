@@ -22,13 +22,14 @@ from util.add_watermark import watermark_image
 from util.norm import SpecificNorm
 from parsing_model.model import BiSeNet
 from pathlib import Path
+from random import shuffle
 
 def _totensor(array):
     tensor = torch.from_numpy(array)
     img = tensor.transpose(0, 1).transpose(0, 2).contiguous()
     return img.float().div(255)
 
-def img_dir_swap(target_dir, id_vetor, swap_model, detect_model, src_file_name, temp_results_dir='./temp_results', crop_size=224, no_simswaplogo = False,use_mask =False,fs_record_p = ''):
+def img_dir_swap(target_dir, id_vetor, swap_model, detect_model, src_file_name, temp_results_dir='./temp_results', crop_size=224, no_simswaplogo = False,use_mask =False,fs_record_p = '', count=-1,randomize_dst= False):
     logoclass = watermark_image('./simswaplogo/simswaplogo.png')
 
     if fs_record_p == '':
@@ -45,7 +46,7 @@ def img_dir_swap(target_dir, id_vetor, swap_model, detect_model, src_file_name, 
     donedata.close()
     # video_HEIGHT = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
-
+    
     spNorm =SpecificNorm()
     if use_mask:
         n_classes = 19
@@ -59,10 +60,14 @@ def img_dir_swap(target_dir, id_vetor, swap_model, detect_model, src_file_name, 
 
     # while ret:
     filelist = [x for x in Path(target_dir).glob('*.jpg')]
+    if randomize_dst:
+        shuffle(filelist)
     for img_fp in tqdm(filelist): 
         frame = cv2.imread(str(img_fp))
         detect_results = detect_model.get(frame,crop_size)
         # print(frame_index)
+        if count == 0:
+            break
         if detect_results is not None and str(img_fp) not in setfcontent:
             if not os.path.exists(temp_results_dir):
                     os.mkdir(temp_results_dir)
@@ -78,7 +83,7 @@ def img_dir_swap(target_dir, id_vetor, swap_model, detect_model, src_file_name, 
                 frame_align_crop_tenor = _totensor(cv2.cvtColor(frame_align_crop,cv2.COLOR_BGR2RGB))[None,...].cuda()
 
                 swap_result = swap_model(None, frame_align_crop_tenor, id_vetor, None, True)[0]
-                outfilePath = Path(temp_results_dir) / (Path(src_file_name).stem + ' @hudengi ' + Path(target_dir).parent.name + ' W1t81N ' + img_fp.name)
+                outfilePath = Path(temp_results_dir) / (Path(src_file_name).stem + ' @hudengi ' + Path(target_dir).name + ' W1t81N ' + img_fp.name)
                 cv2.imwrite(str(outfilePath), frame)
                 swap_result_list.append(swap_result)
                 frame_align_crop_tenor_list.append(frame_align_crop_tenor)
@@ -90,6 +95,6 @@ def img_dir_swap(target_dir, id_vetor, swap_model, detect_model, src_file_name, 
             donedata = open(dbfilename, 'a+')
             donedata.write('\n'+ str(img_fp)) 
             donedata.close()
-
+            count -= 1
         else:
             continue

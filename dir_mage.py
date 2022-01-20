@@ -21,6 +21,7 @@ from util.videoswap import video_swap
 from util.imgdirswap import img_dir_swap
 import os
 from pathlib import Path
+from random import shuffle
 
 def lcm(a, b): return abs(a * b) / fractions.gcd(a, b) if a and b else 0
 
@@ -38,12 +39,9 @@ transformer_Arcface = transforms.Compose([
 #         transforms.Normalize([0, 0, 0], [1/0.229, 1/0.224, 1/0.225]),
 #         transforms.Normalize([-0.485, -0.456, -0.406], [1, 1, 1])
 #     ])
-
-indir = r'D:\paradise\stuff\simswappg\srcs'
-outDir = r'C:\Games\sacred2'
-targetDir = r'D:\paradise\stuff\Images\Best\too hot'
-
-if __name__ == '__main__':
+def single_src_dir_dst(src_img_file_path, targetDir, outDir):
+    
+    count_limit = -1
     opt = TestOptions().parse()
 
     start_epoch, epoch_iter = 1, 0
@@ -63,7 +61,7 @@ if __name__ == '__main__':
     app = Face_detect_crop(name='antelope', root='./insightface_func/models')
     app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640),mode=mode)
     with torch.no_grad():
-        pic_apath = next(Path(indir).glob('*.jpg'))
+        pic_apath = src_img_file_path
         pic_a = str(pic_apath)
         # img_a = Image.open(pic_a).convert('RGB')
         img_a_whole = cv2.imread(pic_a)
@@ -89,5 +87,22 @@ if __name__ == '__main__':
         latend_id = F.normalize(latend_id, p=2, dim=1)
 
         img_dir_swap(targetDir, latend_id, model, app, pic_apath.name,temp_results_dir=outDir,\
-            no_simswaplogo=opt.no_simswaplogo,use_mask=opt.use_mask,crop_size=crop_size)
+            no_simswaplogo=opt.no_simswaplogo,use_mask=opt.use_mask,crop_size=crop_size,count=count_limit)
 
+def src_dir(indir,target_dir,output_dir, randomize_src_files = False):
+    src_img_files = [x for x in Path(indir).glob('*.jpg')]
+    if randomize_src_files:
+        shuffle(src_img_files)
+    for imgFilePath in src_img_files:
+        single_src_dir_dst(imgFilePath,target_dir,output_dir)
+            
+
+if __name__ == '__main__':
+    indir_global = r'D:\paradise\stuff\simswappg\srcs'
+    # indir_global = r'D:\paradise\stuff\Essence\FS\all\Sluts'
+    # outDir_global = r'D:\Developed\FaceSwapExperimental\TestResult'
+    outDir_global = r'D:\paradise\stuff\new\pvd\test'
+    # targetDir_global = r'D:\paradise\stuff\new\pvd2'
+    targetDir_global = r'D:\paradise\stuff\new\pvd'
+    src_dir(indir_global,targetDir_global,outDir_global,True)
+    

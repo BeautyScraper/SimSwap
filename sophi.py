@@ -92,7 +92,10 @@ def spicoutvid(inimgpath,vpath):
 
 if __name__ == '__main__':
     srcimgdir = Path(r'D:\paradise\stuff\simswappg\srcs')
-    dstvideodir = Path(r'D:\paradise\stuff\simswappg\targets')
+    # dstvideodir = Path(r'D:\paradise\stuff\simswappg\targets')
+    # dstvideodir = Path(r'D:\paradise\stuff\new\PVD\extractedVideo')
+    # dstvideodir = Path(r'D:\paradise\stuff\new\pvd2\Ginnibhabhi_video')
+    dstvideodir = Path(r'D:\paradise\stuff\new\PVD\Yummyx (17)_video')
 
     # targetfile = open('donedata.csv','w+')
     testsrc_times = -1
@@ -129,7 +132,7 @@ if __name__ == '__main__':
             donedata.write('\n'+ str(vidFIle)) 
             donedata.close()
             tsc -= 1
-            sleep(1000)
+            # sleep(1000)
           else:
             print('already done')
             continue       
