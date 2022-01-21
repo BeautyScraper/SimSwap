@@ -129,9 +129,9 @@ if __name__ == '__main__':
                 donedata = open(dbfilename, 'a+')
                 donedata.write('\n'+ str(vidFIle)) 
                 donedata.close()
-            except:
-                print(str(imgFiles), str(vidFIle))
-            tsc -= 1
+                tsc -= 1
+            except Exception as e:
+                print(str(imgFiles), str(vidFIle), e)
             # sleep(1000)
           else:
             print('already done')

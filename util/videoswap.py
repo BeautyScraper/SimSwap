@@ -73,14 +73,23 @@ def video_swap(video_path, id_vetor, swap_model, detect_model, save_path, temp_r
     temp_path = Path(temp_results_dir) / frame_name_suffix
     temp_path.mkdir(exist_ok=True)
     temp_results_dir = str(temp_path)
-    
+    should_break = [False]
+    def change_flag():
+        print(should_break[0])
+        should_break[0] = True
+        
     for frame_index in tqdm(range(frame_count)): 
+        
+        # print(should_break)
+        if should_break[0]:
+            break
         ret, frame = video.read()
         temp_img_path = os.path.join(temp_results_dir, 'frame_{:0>7d}.jpg'.format(frame_index))
         command_dict = {
         
         b'd': lambda :open_dir(str(Path(video_path).parent)),
-        b't': lambda :open_dir(temp_results_dir)
+        b't': lambda :open_dir(temp_results_dir),
+        b'c': change_flag,
         
         }
         UserCommand(command_dict)
