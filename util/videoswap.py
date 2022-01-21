@@ -21,6 +21,8 @@ import  time
 from util.add_watermark import watermark_image
 from util.norm import SpecificNorm
 from parsing_model.model import BiSeNet
+from util.key_interrupt import UserCommand,open_dir
+from pathlib import Path
 
 def _totensor(array):
     tensor = torch.from_numpy(array)
@@ -28,6 +30,7 @@ def _totensor(array):
     return img.float().div(255)
 
 def video_swap(video_path, id_vetor, swap_model, detect_model, save_path, temp_results_dir='./temp_results', crop_size=224, no_simswaplogo = False,use_mask =False):
+    # import pdb;pdb.set_trace()
     video_forcheck = VideoFileClip(video_path)
     if video_forcheck.audio is None:
         no_audio = True
@@ -51,8 +54,8 @@ def video_swap(video_path, id_vetor, swap_model, detect_model, save_path, temp_r
     # video_HEIGHT = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
     fps = video.get(cv2.CAP_PROP_FPS)
-    if  os.path.exists(temp_results_dir):
-            shutil.rmtree(temp_results_dir)
+    # if  os.path.exists(temp_results_dir):
+            # shutil.rmtree(temp_results_dir)
 
     spNorm =SpecificNorm()
     if use_mask:
@@ -66,8 +69,23 @@ def video_swap(video_path, id_vetor, swap_model, detect_model, save_path, temp_r
         net =None
 
     # while ret:
+    frame_name_suffix = Path(save_path).stem
+    temp_path = Path(temp_results_dir) / frame_name_suffix
+    temp_path.mkdir(exist_ok=True)
+    temp_results_dir = str(temp_path)
+    
     for frame_index in tqdm(range(frame_count)): 
         ret, frame = video.read()
+        temp_img_path = os.path.join(temp_results_dir, 'frame_{:0>7d}.jpg'.format(frame_index))
+        command_dict = {
+        
+        b'd': lambda :open_dir(str(Path(video_path).parent)),
+        b't': lambda :open_dir(temp_results_dir)
+        
+        }
+        UserCommand(command_dict)
+        if Path(temp_img_path).is_file():
+            continue
         if  ret:
             detect_results = detect_model.get(frame,crop_size)
 
@@ -87,14 +105,14 @@ def video_swap(video_path, id_vetor, swap_model, detect_model, save_path, temp_r
                     frame_align_crop_tenor = _totensor(cv2.cvtColor(frame_align_crop,cv2.COLOR_BGR2RGB))[None,...].cuda()
 
                     swap_result = swap_model(None, frame_align_crop_tenor, id_vetor, None, True)[0]
-                    cv2.imwrite(os.path.join(temp_results_dir, 'frame_{:0>7d}.jpg'.format(frame_index)), frame)
+                    cv2.imwrite(temp_img_path, frame)
                     swap_result_list.append(swap_result)
                     frame_align_crop_tenor_list.append(frame_align_crop_tenor)
-
+                    
                     
 
                 reverse2wholeimage(frame_align_crop_tenor_list,swap_result_list, frame_mat_list, crop_size, frame, logoclass,\
-                    os.path.join(temp_results_dir, 'frame_{:0>7d}.jpg'.format(frame_index)),no_simswaplogo,pasring_model =net,use_mask=use_mask, norm = spNorm)
+                    temp_img_path,no_simswaplogo,pasring_model =net,use_mask=use_mask, norm = spNorm)
 
             else:
                 if not os.path.exists(temp_results_dir):
@@ -107,7 +125,7 @@ def video_swap(video_path, id_vetor, swap_model, detect_model, save_path, temp_r
             break
 
     video.release()
-
+    # import pdb;pdb.set_trace()
     # image_filename_list = []
     path = os.path.join(temp_results_dir,'*.jpg')
     image_filenames = sorted(glob.glob(path))
@@ -117,6 +135,7 @@ def video_swap(video_path, id_vetor, swap_model, detect_model, save_path, temp_r
     if not no_audio:
         clips = clips.set_audio(video_audio_clip)
 
-
+    
     clips.write_videofile(save_path,audio_codec='aac')
+    shutil.rmtree(temp_results_dir)
 

@@ -59,7 +59,7 @@ def img_dir_swap(target_dir, id_vetor, swap_model, detect_model, src_file_name, 
         net =None
 
     # while ret:
-    filelist = [x for x in Path(target_dir).glob('*.jpg')]
+    filelist = [x for x in Path(target_dir).glob('*.jpg') if str(x) not in setfcontent]
     if randomize_dst:
         shuffle(filelist)
     for img_fp in tqdm(filelist): 
@@ -68,7 +68,7 @@ def img_dir_swap(target_dir, id_vetor, swap_model, detect_model, src_file_name, 
         # print(frame_index)
         if count == 0:
             break
-        if detect_results is not None and str(img_fp) not in setfcontent:
+        if detect_results is not None:
             if not os.path.exists(temp_results_dir):
                     os.mkdir(temp_results_dir)
             frame_align_crop_list = detect_results[0]
@@ -92,9 +92,7 @@ def img_dir_swap(target_dir, id_vetor, swap_model, detect_model, src_file_name, 
 
                 reverse2wholeimage(frame_align_crop_tenor_list,swap_result_list, frame_mat_list, crop_size, frame, logoclass,\
                     str(outfilePath),no_simswaplogo,pasring_model =net,use_mask=use_mask, norm = spNorm)
-            donedata = open(dbfilename, 'a+')
-            donedata.write('\n'+ str(img_fp)) 
-            donedata.close()
             count -= 1
-        else:
-            continue
+        donedata = open(dbfilename, 'a+')
+        donedata.write('\n'+ str(img_fp)) 
+        donedata.close()

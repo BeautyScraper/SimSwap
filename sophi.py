@@ -126,11 +126,11 @@ if __name__ == '__main__':
           if str(vidFIle) not in setfcontent:
             try:
                 spicoutvid(str(imgFiles), str(vidFIle))
+                donedata = open(dbfilename, 'a+')
+                donedata.write('\n'+ str(vidFIle)) 
+                donedata.close()
             except:
                 print(str(imgFiles), str(vidFIle))
-            donedata = open(dbfilename, 'a+')
-            donedata.write('\n'+ str(vidFIle)) 
-            donedata.close()
             tsc -= 1
             # sleep(1000)
           else:
