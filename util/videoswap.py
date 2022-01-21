@@ -23,6 +23,10 @@ from util.norm import SpecificNorm
 from parsing_model.model import BiSeNet
 from util.key_interrupt import UserCommand,open_dir
 from pathlib import Path
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+
 
 def _totensor(array):
     tensor = torch.from_numpy(array)

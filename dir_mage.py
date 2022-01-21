@@ -100,13 +100,14 @@ def src_dir(indir,target_dir,output_dir, randomize_src_files = False):
 if __name__ == '__main__':
     indir_global = r'D:\paradise\stuff\simswappg\srcs'
     # indir_global = r'D:\paradise\stuff\Essence\FS\all\Sluts'
-    # outDir_global = r'D:\Developed\FaceSwapExperimental\TestResult'
-    # outDir_global = r'D:\paradise\stuff\new\pvd\test'
     # targetDir_global = r'C:\Heaven\YummyBaker'
-    targetDir_global = r'D:\paradise\stuff\new\imageset2\meri maa mujhse chud jati'
+    # targetDir_global = r'C:\Heaven\YummyBaker'
+    # targetDir_global = r'D:\paradise\stuff\new\imageset2\meri maa mujhse chud jati'
     # targetDir_global = 
-    outDir_global = r'C:\Games\sacred2'
     # targetDir_global = r'D:\paradise\stuff\new\pvd2'
-    # targetDir_global = r'D:\paradise\stuff\new\pvd'
+    targetDir_global = r'D:\paradise\stuff\new\pvd'
+    outDir_global = r'D:\paradise\stuff\new\pvd\test'
+    # outDir_global = r'D:\Developed\FaceSwapExperimental\TestResult'
+    # outDir_global = r'C:\Games\sacred2'
     src_dir(indir_global,targetDir_global,outDir_global,True)
     

@@ -40,7 +40,7 @@ transformer_Arcface = transforms.Compose([
 #         transforms.Normalize([-0.485, -0.456, -0.406], [1, 1, 1])
 #     ])
 
-def spicoutvid(inimgpath,vpath):
+def spicoutvid(inimgpath,vpath,rpath):
     opt = TestOptions().parse()
 
     start_epoch, epoch_iter = 1, 0
@@ -62,7 +62,8 @@ def spicoutvid(inimgpath,vpath):
 
     with torch.no_grad():
         pic_a = inimgpath
-        outpath = Path(r'D:\Developed\VFS\RandyVideo\xdivision')
+        # outpath = Path(r'D:\Developed\VFS\RandyVideo\xdivision')
+        outpath = Path(rpath)
         opt.output_path = str(outpath / (Path(pic_a).stem + Path(vpath).name))
         # img_a = Image.open(pic_a).convert('RGB')
         img_a_whole = cv2.imread(pic_a)
@@ -89,25 +90,8 @@ def spicoutvid(inimgpath,vpath):
 
         video_swap(vpath, latend_id, model, app, opt.output_path,temp_results_dir=opt.temp_path,\
             no_simswaplogo=opt.no_simswaplogo,use_mask=opt.use_mask,crop_size=crop_size)
-
-if __name__ == '__main__':
-    srcimgdir = Path(r'D:\paradise\stuff\simswappg\srcs')
-    # dstvideodir = Path(r'D:\paradise\stuff\simswappg\targets')
-    # dstvideodir = Path(r'D:\paradise\stuff\new\PVD\extractedVideo')
-    # dstvideodir = Path(r'D:\paradise\stuff\new\pvd2\Ginnibhabhi_video')
-    dstvideodir = Path(r'D:\paradise\stuff\new\PVD\Yummyx (17)_video')
-
-    # targetfile = open('donedata.csv','w+')
-    testsrc_times = -1
-    randsrc = True
-    randdst = True
-    # targetfile = open('donedata.csv','w+')
-    srcFileList = [x for x in srcimgdir.glob('*.jpg')]
-    dstFileList = [x for x in dstvideodir.glob('*.mp4')]
-    if randsrc:
-        shuffle(srcFileList)    
-        
-    for imgFiles in srcFileList:
+            
+def single_src(imgFiles, dstFileList, respath,testsrc_times=-1):
       parentdir = imgFiles.parent / 'VFsRecords'
       parentdir.mkdir(exist_ok=True)  
       dbfilename = parentdir / (imgFiles.stem+'.csv')
@@ -118,21 +102,42 @@ if __name__ == '__main__':
       donedata.close()
       setfcontent = set(fcontent)
       tsc = testsrc_times
-      if randdst:
-          shuffle(dstFileList)
       for vidFIle in dstFileList:
           if tsc == 0:
             break
           if str(vidFIle) not in setfcontent:
             try:
-                spicoutvid(str(imgFiles), str(vidFIle))
+                spicoutvid(str(imgFiles), str(vidFIle), str(respath))
                 donedata = open(dbfilename, 'a+')
                 donedata.write('\n'+ str(vidFIle)) 
                 donedata.close()
                 tsc -= 1
             except Exception as e:
-                print(str(imgFiles), str(vidFIle), e)
+                print(str(imgFiles), str(vidFIle)+ e)
             # sleep(1000)
           else:
             print('already done')
             continue       
+
+def setSrc_setDst(srcimgdir,dstvideodir,respath):
+    # respath = Path(respath_s)
+    # targetfile = open('donedata.csv','w+')
+    testsrc_times = -1
+    randsrc = True
+    randdst = True
+    # targetfile = open('donedata.csv','w+')
+    srcFileList = [x for x in srcimgdir.glob('*.jpg')]
+    dstFileList = [x for x in dstvideodir.glob('*.mp4')]
+    if randsrc:
+        shuffle(srcFileList)        
+    if randdst:
+        shuffle(dstFileList)
+    for imgFiles in srcFileList:
+        single_src(imgFiles,dstFileList,respath,testsrc_times)
+            
+if __name__ == "__main__":
+    srcimgdir_g = Path(r'D:\paradise\stuff\simswappg\srcs')
+    dstvideodir_g = Path(r'D:\paradise\stuff\new\PVD\Yummyx (17)_video')
+    respath_g = Path(r'D:\Developed\VFS\RandyVideo\xdivision')
+    setSrc_setDst(srcimgdir_g,dstvideodir_g,respath_g)
+    
