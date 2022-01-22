@@ -113,7 +113,7 @@ def single_src(imgFiles, dstFileList, respath,testsrc_times=-1):
                 donedata.close()
                 tsc -= 1
             except Exception as e:
-                print(str(imgFiles), str(vidFIle)+ e)
+                print(str(imgFiles), str(vidFIle), e)
             # sleep(1000)
           else:
             print('already done')
