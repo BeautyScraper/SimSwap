@@ -46,6 +46,26 @@ def _toarctensor(array):
     img = tensor.transpose(0, 1).transpose(0, 2).contiguous()
     return img.float().div(255)
 
+def model_mem():
+    swap_result_list = {}
+    def model_run(model_m,b_align_crop_tenor_list,tmp_index,target_id_norm_list,min_index,reset=False):
+        if reset == True:
+            swap_result_list.clear()
+            print('***************list is cleared ***************')
+            print('***************list is cleared ***************')
+            print('***************list is cleared ***************')
+            return
+        if (tmp_index,min_index) not in swap_result_list:
+            swap_result = model_m(None, b_align_crop_tenor_list[tmp_index], target_id_norm_list[min_index], None, True)[0]
+            swap_result_list[(tmp_index,min_index)] = swap_result
+        else:
+            print('alredy got it Don\'t Worry ',(tmp_index,min_index))
+            swap_result = swap_result_list[(tmp_index,min_index)]
+        return swap_result
+    return model_run
+    
+model_mem_g = model_mem()
+
 def multifacewap(multisepcific_dir, target_pic_path_s, result_dir_path, swap_list = []):
     opt = TestOptions().parse()
     print(swap_list)
@@ -157,7 +177,8 @@ def multifacewap(multisepcific_dir, target_pic_path_s, result_dir_path, swap_lis
         print(min_indexs)
         for tmp_index, min_index in enumerate(min_indexs):
             if True and min_index >= 0:
-                swap_result = model(None, b_align_crop_tenor_list[tmp_index], target_id_norm_list[min_index], None, True)[0]
+                swap_result = model_mem_g(model,b_align_crop_tenor_list,tmp_index,target_id_norm_list,min_index)
+                # swap_result = model(None, b_align_crop_tenor_list[tmp_index], target_id_norm_list[min_index], None, True)[0]
                 swap_result_list.append(swap_result)
                 swap_result_matrix_list.append(b_mat_list[tmp_index])
                 swap_result_ori_pic_list.append(b_align_crop_tenor_list[tmp_index])
@@ -227,7 +248,8 @@ def multiface_dir(multisepcific_dir, target_dir_path, result_dir):
                 fs.write('\n' + checkCode)
                 fs.close()
             except Exception as e:
-                print(e)
+                print('msg' + e)
+        model_mem_g(None,None,None,None,None,True)
         
             
     
