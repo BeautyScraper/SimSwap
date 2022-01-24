@@ -18,11 +18,14 @@ if __name__ == "__main__":
     srcimgdir_g = Path(r'D:\paradise\stuff\simswappg\srcs')
     dstvideodir_g = Path(r'D:\paradise\stuff\new\PVD')
     respath_g = Path(r'D:\Developed\VFS\RandyVideo\xdivision')
-    for imgFIles in srcimgdir_g.glob('*.jpg'):
+    imfiles = [x for x in srcimgdir_g.glob('*.jpg')]
+    shuffle(imfiles)
+    for imgFIles in imfiles:
         tes_dir = dstvideodir_g / (imgFIles.stem + '_video')
         # import pdb;pdb.set_trace()
         if tes_dir.is_dir():
             dstFileList = [x for x in tes_dir.glob('*.mp4')]
+            shuffle(dstFileList)
             single_src(imgFIles,dstFileList,respath_g)
     # setSrc_setDst(srcimgdir_g,dstvideodir_g,respath_g)
     

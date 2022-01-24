@@ -76,6 +76,7 @@ def dofsmage(srcfileps,targetfps):
 
         #create latent id
         img_id_downsample = F.interpolate(img_id, size=(112,112))
+        # img_id_downsample = F.interpolate(img_id, size=(200,200))
         latend_id = model.netArc(img_id_downsample)
         latend_id = F.normalize(latend_id, p=2, dim=1)
 
@@ -175,13 +176,14 @@ if __name__ == '__main__':
           if str(vidFIle) not in setfcontent:
             try:
                 dofsmage(str(imgFiles), str(vidFIle))
-            except:
-                print(str(imgFiles), str(vidFIle))
+                donedata = open(dbfilename, 'a+')
+                donedata.write('\n'+ str(vidFIle)) 
+                donedata.close()
+                tsc -= 1
+            except Exception as e:
+                print(str(imgFiles), str(vidFIle),e)
+                print(str(imgFiles), str(vidFIle)+e)
                 continue
-            donedata = open(dbfilename, 'a+')
-            donedata.write('\n'+ str(vidFIle)) 
-            donedata.close()
-            tsc -= 1
             # sleep(1000)
           else:
             print('already done')

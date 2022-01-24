@@ -1,1 +1,1 @@
-conda activate simswap && python sophi.py
+conda activate simswap && cmd /k python sophi.py

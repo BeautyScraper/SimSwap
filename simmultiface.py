@@ -154,7 +154,7 @@ def multifacewap(multisepcific_dir, target_pic_path_s, result_dir_path, swap_lis
         swap_result_list = [] 
         swap_result_matrix_list = []
         swap_result_ori_pic_list = []
-
+        print(min_indexs)
         for tmp_index, min_index in enumerate(min_indexs):
             if True and min_index >= 0:
                 swap_result = model(None, b_align_crop_tenor_list[tmp_index], target_id_norm_list[min_index], None, True)[0]
@@ -176,7 +176,7 @@ def multifacewap(multisepcific_dir, target_pic_path_s, result_dir_path, swap_lis
             else:
                 net =None
             Path(result_dir_path).mkdir(exist_ok=True)
-            resultFilePath = str(Path(result_dir_path) / ( Path(target_pic_path_s).stem + str(min_indexs) )) + '.jpg'
+            resultFilePath = str(Path(result_dir_path) / ( Path(multisepcific_dir).name + Path(target_pic_path_s).stem + str(min_indexs) )) + '.jpg'
             reverse2wholeimage(swap_result_ori_pic_list, swap_result_list, swap_result_matrix_list, crop_size, img_b_whole, logoclass,\
                 resultFilePath, opt.no_simswaplogo,pasring_model =net,use_mask=opt.use_mask, norm = spNorm)
 
@@ -212,24 +212,30 @@ def multiface_dir(multisepcific_dir, target_dir_path, result_dir):
             facesInImg = int(re.search('\@\[(\d+)\]',fs.readline())[1])
         facesinsrcdir = len([x for x in Path(multisepcific_dir).glob('*.jpg')])
         if facesinsrcdir <= facesInImg:
-            swap_list = list(range(0,facesinsrcdir)) + ([-1] * (facesInImg - facesinsrcdir))
+            swap_list = list(range(0,facesinsrcdir)) + [-1] * (facesInImg - facesinsrcdir)
             r = len(swap_list)
         else:
             swap_list = list(range(0,facesinsrcdir)) 
-            r = (facesinsrcdir - facesInImg)
+            r = facesInImg
         for swaplist in list(permutations(swap_list,r)):
             checkCode = str(imgfiles)+'@[%s]' % str(swaplist)
-            if checkCode not in setfilecontent:
+            if checkCode in setfilecontent:
+                continue
+            try:
                 multifacewap(multisepcific_dir, str(imgfiles), result_dir, list(swaplist))
                 fs = open(csvFile, 'a+')
                 fs.write('\n' + checkCode)
                 fs.close()
+            except Exception as e:
+                print(e)
         
             
     
             
 if __name__ == '__main__':
-    srcDir = r'D:\paradise\stuff\simswappg\srcs'
+    # srcDir = r'D:\paradise\stuff\simswappg\srcs'
+    # srcDir = r'D:\paradise\stuff\Essence\FS\CelebCombination\simcombination\nawabi'
+    srcDir = r'D:\paradise\stuff\simswappg\combinationSrc\known'
     target_dir = r'C:\Games\MultiFaces'
-    result_dir = r'C:\Games\Sacred2'
+    result_dir = r'C:\Games\NextFaceresult'
     multiface_dir(srcDir,target_dir,result_dir)
