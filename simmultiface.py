@@ -209,46 +209,75 @@ def multifacewap(multisepcific_dir, target_pic_path_s, result_dir_path, swap_lis
             print('The people you specified are not found on the picture: {}'.format(pic_b))
     return len(b_align_crop_tenor_list)
     
+def FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecontent,csvFile):    
+    facesinsrcdir = len([x for x in Path(multisepcific_dir).glob('*.jpg')])
+    if facesinsrcdir <= facesInImg:
+        swap_list = list(range(0,facesinsrcdir)) + [-1] * (facesInImg - facesinsrcdir)
+        r = len(swap_list)
+    else:
+        swap_list = list(range(0,facesinsrcdir)) 
+        r = facesInImg
+    for swaplist in list(permutations(swap_list,r)):
+        checkCode = str(imgfiles)+'@[%s]' % str(swaplist)
+        if checkCode in setfilecontent:
+            continue
+        try:
+            multifacewap(multisepcific_dir, str(imgfiles), result_dir, list(swaplist))
+            fs = open(csvFile, 'a+')
+            fs.write('\n' + checkCode)
+            fs.close()
+        except Exception as e:
+            print('msg' + e)
 
+def set_target_image_mem(imgfiles, multisepcific_dir, target_dir_path, result_dir,csvFileLocationdir):
+    csvFile = csvFileLocationdir / (imgfiles.parent.name + '_completed.csv') 
+    if not csvFile.is_file():
+        setfilecontent = set([])
+    else:
+        fs = open(csvFile,'r')
+        setfilecontent = set([x.strip() for x in fs.readlines()])
+        fs.close()
+    if str(imgfiles) not in setfilecontent:
+        # facesInImg = multifacewap(multisepcific_dir, str(imgfiles), result_dir)
+        set_target_image(imgfiles, multisepcific_dir, target_dir_path, result_dir,csvFileLocationdir)
+        fs = open(csvFile,'a+')
+        fs.write(str(imgfiles)+'\n')
+        # fs.write('\n'+str(imgfiles)+'@[%s]' % str(list(range(0,facesInImg))))
+        fs.close()
+    else:
+        import pdb;pdb.set_trace()
+        print('Already done with this file')
+        # fs = open(csvFile,'a+')
+    
+def set_target_image(imgfiles, multisepcific_dir, target_dir_path, result_dir,csvFileLocationdir):
+    csvFile = csvFileLocationdir / (imgfiles.parent.name + '.csv')
+
+    if not csvFile.is_file():
+        setfilecontent = set([])
+    else:
+        fs = open(csvFile,'r')
+        setfilecontent = set([x.strip() for x in fs.readlines()])
+        fs.close()
+    if str(imgfiles) not in setfilecontent:
+        facesInImg = multifacewap(multisepcific_dir, str(imgfiles), result_dir)
+        fs = open(csvFile,'a+')
+        fs.write(str(imgfiles)+'@[%s]' % str(facesInImg))
+        fs.write('\n'+str(imgfiles)+'@[%s]' % str(list(range(0,facesInImg))))
+        fs.write('\n'+str(imgfiles))
+        fs.close()
+    else:
+        fs = open(csvFile,'a+')
+        facesInImg = int(re.search('\@\[(\d+)\]',fs.readline())[1])
+    FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecontent,csvFile)    
+                
+    
 def multiface_dir(multisepcific_dir, target_dir_path, result_dir):
     csvFileLocationdir = Path(multisepcific_dir) / 'MFSRecords'
     csvFileLocationdir.mkdir(exist_ok=True)
     # permutationList = []
     for imgfiles in Path(target_dir_path).glob('*.jpg'):
-        csvFile = csvFileLocationdir / (imgfiles.parent.name + '.csv')
-        if not csvFile.is_file():
-            setfilecontent = set([])
-        else:
-            fs = open(csvFile,'r')
-            setfilecontent = set([x.strip() for x in fs.readlines()])
-            fs.close()
-        if str(imgfiles) not in setfilecontent:
-            facesInImg = multifacewap(multisepcific_dir, str(imgfiles), result_dir)
-            fs = open(csvFile,'a+')
-            fs.write(str(imgfiles)+'@[%s]' % str(facesInImg))
-            fs.write('\n'+str(imgfiles)+'@[%s]' % str(list(range(0,facesInImg))))
-            fs.close()
-        else:
-            fs = open(csvFile,'a+')
-            facesInImg = int(re.search('\@\[(\d+)\]',fs.readline())[1])
-        facesinsrcdir = len([x for x in Path(multisepcific_dir).glob('*.jpg')])
-        if facesinsrcdir <= facesInImg:
-            swap_list = list(range(0,facesinsrcdir)) + [-1] * (facesInImg - facesinsrcdir)
-            r = len(swap_list)
-        else:
-            swap_list = list(range(0,facesinsrcdir)) 
-            r = facesInImg
-        for swaplist in list(permutations(swap_list,r)):
-            checkCode = str(imgfiles)+'@[%s]' % str(swaplist)
-            if checkCode in setfilecontent:
-                continue
-            try:
-                multifacewap(multisepcific_dir, str(imgfiles), result_dir, list(swaplist))
-                fs = open(csvFile, 'a+')
-                fs.write('\n' + checkCode)
-                fs.close()
-            except Exception as e:
-                print('msg' + e)
+    
+        set_target_image_mem(imgfiles, multisepcific_dir, target_dir_path, result_dir,csvFileLocationdir)
         model_mem_g(None,None,None,None,None,True)
         
             
