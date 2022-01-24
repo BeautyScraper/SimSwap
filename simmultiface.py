@@ -51,9 +51,9 @@ def model_mem():
     def model_run(model_m,b_align_crop_tenor_list,tmp_index,target_id_norm_list,min_index,reset=False):
         if reset == True:
             swap_result_list.clear()
-            print('***************list is cleared ***************')
-            print('***************list is cleared ***************')
-            print('***************list is cleared ***************')
+            # print('***************list is cleared ***************')
+            # print('***************list is cleared ***************')
+            # print('***************list is cleared ***************')
             return
         if (tmp_index,min_index) not in swap_result_list:
             swap_result = model_m(None, b_align_crop_tenor_list[tmp_index], target_id_norm_list[min_index], None, True)[0]
@@ -66,7 +66,7 @@ def model_mem():
     
 model_mem_g = model_mem()
 
-def multifacewap_prepare(multisepcific_dir, target_pic_path_s, result_dir_path):
+def multifacewap(multisepcific_dir, target_pic_path_s, result_dir_path,swap_list=[]):
     opt = TestOptions().parse()
     # print(swap_list)
     start_epoch, epoch_iter = 1, 0
@@ -161,57 +161,58 @@ def multifacewap_prepare(multisepcific_dir, target_pic_path_s, result_dir_path):
             # for source_specific_id_nonorm_tmp in source_specific_id_nonorm_list:
                 # id_compare_values[-1].append(mse(b_align_crop_id_nonorm,source_specific_id_nonorm_tmp).detach().cpu().numpy())
             b_align_crop_tenor_list.append(b_align_crop_tenor)
-        def actual_multi_faceswap(swap_list=[]):
-            # id_compare_values_array = np.array(id_compare_values).transpose(1,0)
-            # min_indexs = np.argmin(id_compare_values_array,axis=0)
-            # min_value = np.min(id_compare_values_array,axis=0)
-            # if len(facesInImg)
-            # import pdb;pdb.set_trace()
-            if swap_list == []:
-                min_indexs = list(range(0,len(b_align_crop_tenor_list)))
-            else:
-                min_indexs = swap_list
-                
-            swap_result_list = [] 
-            swap_result_matrix_list = []
-            swap_result_ori_pic_list = []
-            print(min_indexs)
-            for tmp_index, min_index in enumerate(min_indexs):
-                if True and min_index >= 0:
-                    swap_result = model_mem_g(model,b_align_crop_tenor_list,tmp_index,target_id_norm_list,min_index)
-                    # swap_result = model(None, b_align_crop_tenor_list[tmp_index], target_id_norm_list[min_index], None, True)[0]
-                    swap_result_list.append(swap_result)
-                    swap_result_matrix_list.append(b_mat_list[tmp_index])
-                    swap_result_ori_pic_list.append(b_align_crop_tenor_list[tmp_index])
-                else:
-                    pass
-
-            if len(swap_result_list) !=0:
-
-                if opt.use_mask:
-                    n_classes = 19
-                    net = BiSeNet(n_classes=n_classes)
-                    net.cuda()
-                    save_pth = os.path.join('./parsing_model/checkpoint', '79999_iter.pth')
-                    net.load_state_dict(torch.load(save_pth))
-                    net.eval()
-                else:
-                    net =None
-                Path(result_dir_path).mkdir(exist_ok=True)
-                resultFilePath = str(Path(result_dir_path) / ( Path(multisepcific_dir).name + Path(target_pic_path_s).stem + str(min_indexs) )) + '.jpg'
-                reverse2wholeimage(swap_result_ori_pic_list, swap_result_list, swap_result_matrix_list, crop_size, img_b_whole, logoclass,\
-                    resultFilePath, opt.no_simswaplogo,pasring_model =net,use_mask=opt.use_mask, norm = spNorm)
-
-                print(' ')
-
-                print('************ Done ! ************')
+        # def actual_multi_faceswap(swap_list=[]):
+        # id_compare_values_array = np.array(id_compare_values).transpose(1,0)
+        # min_indexs = np.argmin(id_compare_values_array,axis=0)
+        # min_value = np.min(id_compare_values_array,axis=0)
+        # if len(facesInImg)
+        # import pdb;pdb.set_trace()
+        if swap_list == []:
+            min_indexs = list(range(0,len(b_align_crop_tenor_list)))
+        else:
+            min_indexs = swap_list
             
+        swap_result_list = [] 
+        swap_result_matrix_list = []
+        swap_result_ori_pic_list = []
+        print(min_indexs)
+        for tmp_index, min_index in enumerate(min_indexs):
+            if True and min_index >= 0:
+                swap_result = model_mem_g(model,b_align_crop_tenor_list,tmp_index,target_id_norm_list,min_index)
+                model.eval()
+                # swap_result = model(None, b_align_crop_tenor_list[tmp_index], target_id_norm_list[min_index], None, True)[0]
+                swap_result_list.append(swap_result)
+                swap_result_matrix_list.append(b_mat_list[tmp_index])
+                swap_result_ori_pic_list.append(b_align_crop_tenor_list[tmp_index])
             else:
-                print('The people you specified are not found on the picture: {}'.format(pic_b))
-            swap_list.clear()
-            return len(b_align_crop_tenor_list)
-        return actual_multi_faceswap
-def FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecontent,csvFile,multifacewap):    
+                pass
+
+        if len(swap_result_list) !=0:
+
+            if opt.use_mask:
+                n_classes = 19
+                net = BiSeNet(n_classes=n_classes)
+                net.cuda()
+                save_pth = os.path.join('./parsing_model/checkpoint', '79999_iter.pth')
+                net.load_state_dict(torch.load(save_pth))
+                net.eval()
+            else:
+                net =None
+            Path(result_dir_path).mkdir(exist_ok=True)
+            resultFilePath = str(Path(result_dir_path) / ( Path(multisepcific_dir).name + Path(target_pic_path_s).stem + str(min_indexs) )) + '.jpg'
+            reverse2wholeimage(swap_result_ori_pic_list, swap_result_list, swap_result_matrix_list, crop_size, img_b_whole, logoclass,\
+                resultFilePath, opt.no_simswaplogo,pasring_model =net,use_mask=opt.use_mask, norm = spNorm)
+
+            print(' ')
+
+            print('************ Done ! ************')
+        
+        else:
+            print('The people you specified are not found on the picture: {}'.format(pic_b))
+        swap_list.clear()
+        return len(b_align_crop_tenor_list)
+        # return actual_multi_faceswap
+def FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecontent,csvFile):    
     facesinsrcdir = len([x for x in Path(multisepcific_dir).glob('*.jpg')])
     if facesinsrcdir <= facesInImg:
         swap_list = list(range(0,facesinsrcdir)) + [-1] * (facesInImg - facesinsrcdir)
@@ -227,8 +228,8 @@ def FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecon
         if checkCode in setfilecontent:
             continue
         try:
-            # multifacewap = multifacewap_prepare(multisepcific_dir, str(imgfiles), result_dir)
-            multifacewap(list(swaplist))
+            multifacewap(multisepcific_dir, str(imgfiles), result_dir, list(swaplist))
+            # multifacewap()
             fs = open(csvFile, 'a+')
             fs.write('\n' + checkCode)
             fs.close()
@@ -264,9 +265,9 @@ def set_target_image(imgfiles, multisepcific_dir, target_dir_path, result_dir,cs
         fs = open(csvFile,'r')
         setfilecontent = set([x.strip() for x in fs.readlines()])
         fs.close()
-    multifacewap = multifacewap_prepare(multisepcific_dir, str(imgfiles), result_dir)
+    # multifacewap = multifacewap_prepare(multisepcific_dir, str(imgfiles), result_dir)
     if str(imgfiles) not in setfilecontent:
-        facesInImg = multifacewap()
+        facesInImg = multifacewap(multisepcific_dir, str(imgfiles), result_dir)
         fs = open(csvFile,'a+')
         fs.write(str(imgfiles)+'@[%s]' % str(facesInImg))
         fs.write('\n'+str(imgfiles)+'@[%s]' % str(list(range(0,facesInImg))))
@@ -279,7 +280,7 @@ def set_target_image(imgfiles, multisepcific_dir, target_dir_path, result_dir,cs
         facesInImg = int(re.search('\@\[(\d+)\]',firstLine)[1])
         fs.close()
         # import pdb;pdb.set_trace()
-    FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecontent,csvFile,multifacewap)    
+    FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecontent,csvFile)    
                 
     
 def multiface_dir(multisepcific_dir, target_dir_path, result_dir):
