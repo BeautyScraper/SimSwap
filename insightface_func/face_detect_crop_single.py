@@ -66,16 +66,21 @@ class Face_detect_crop:
                 model.prepare(ctx_id)
     def get(self, img, crop_size, max_num=0):
         m = hashlib.sha256()
+        m.update(img)
         filename = m.hexdigest()
         ftc = self.detection_result_path_s / filename
-        
+        # import pdb;pdb.set_trace()
+        ftc.parent.mkdir(exist_ok=True)
         if not ftc.is_file():
-            fptc = open(ftc,'wb')
             cont_to_save = self.get_real(img, crop_size, max_num=0)
+            fptc = open(ftc,'wb')
             pickle.dump(cont_to_save,fptc)
+            fptc.close()
         else:
+            
             fptc = open(ftc,'rb')
             cont_to_save = pickle.load(fptc)
+            # import pdb;pdb.set_trace()
         return cont_to_save
             
         
@@ -86,7 +91,7 @@ class Face_detect_crop:
                                              metric='default')
         if bboxes.shape[0] == 0:
             return None
-        import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
         # ret = []
         # for i in range(bboxes.shape[0]):
         #     bbox = bboxes[i, 0:4]

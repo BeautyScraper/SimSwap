@@ -81,7 +81,8 @@ def video_swap(video_path, id_vetor, swap_model, detect_model, save_path, temp_r
     def change_flag():
         print(should_break[0])
         should_break[0] = True
-        
+    detect_model.detection_result_path_s = Path(video_path).parent.parent / 'detection_records' / Path(video_path).stem
+    detect_model.detection_result_path_s.mkdir(parents=True,exist_ok=True)
     for frame_index in tqdm(range(frame_count)): 
         
         # print(should_break)
