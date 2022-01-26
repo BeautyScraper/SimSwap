@@ -46,6 +46,9 @@ def _toarctensor(array):
     img = tensor.transpose(0, 1).transpose(0, 2).contiguous()
     return img.float().div(255)
 
+        
+    
+    
 def model_mem():
     swap_result_list = {}
     def model_run(model_m,b_align_crop_tenor_list,tmp_index,target_id_norm_list,min_index,reset=False):
@@ -85,6 +88,41 @@ spNorm =SpecificNorm()
 
 app = Face_detect_crop(name='antelope', root='./insightface_func/models')
 app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640),mode = mode)
+
+
+class faceswap:
+     def __init__(self,srcDir,DstDir,resulDir):
+        self.srcDir = Path(srcDir)
+        self.DstDir = Path(DstDir)
+        self.resulDir = Path(resulDir)
+        self.model = create_model(opt)
+        self.model.eval()
+        self.target_id_norm_list = []
+        self.settargetidNorm()
+        
+     def settargetidNorm(self):
+        with torch.no_grad():
+            target_path = os.path.join(str(self.srcDir),'*.jpg')
+            target_images_path = sorted(glob.glob(target_path))
+
+            for target_image_path in target_images_path:
+                img_a_whole = cv2.imread(target_image_path)
+                img_a_align_crop, _ = app.get(img_a_whole,crop_size)
+                img_a_align_crop_pil = Image.fromarray(cv2.cvtColor(img_a_align_crop[0],cv2.COLOR_BGR2RGB)) 
+                img_a = transformer_Arcface(img_a_align_crop_pil)
+                img_id = img_a.view(-1, img_a.shape[0], img_a.shape[1], img_a.shape[2])
+                # convert numpy to tensor
+                img_id = img_id.cuda()
+                # create latent id
+                img_id_downsample = F.interpolate(img_id, size=(112,112))
+                latend_id = self.model.netArc(img_id_downsample)
+                latend_id = F.normalize(latend_id, p=2, dim=1)
+                self.target_id_norm_list.append(latend_id.clone())
+    
+
+        
+        
+        
 def multifacewap(multisepcific_dir, target_pic_path_s, result_dir_path,swap_list=[]):
     # print(swap_list)
 
@@ -301,4 +339,5 @@ if __name__ == '__main__':
     srcDir = r'D:\paradise\stuff\simswappg\combinationSrc\known'
     target_dir = r'C:\Games\MultiFaces'
     result_dir = r'C:\Games\NextFaceresult'
-    multiface_dir(srcDir,target_dir,result_dir)
+    x = faceswap(srcDir,target_dir,result_dir)
+    # multiface_dir(srcDir,target_dir,result_dir)
