@@ -39,9 +39,9 @@ transformer_Arcface = transforms.Compose([
 #         transforms.Normalize([0, 0, 0], [1/0.229, 1/0.224, 1/0.225]),
 #         transforms.Normalize([-0.485, -0.456, -0.406], [1, 1, 1])
 #     ])
-def single_src_dir_dst(src_img_file_path, targetDir, outDir):
+def single_src_dir_dst(src_img_file_path, targetDir, outDir,count_limit = -1):
     
-    count_limit = -1
+    # count_limit = -1
     opt = TestOptions().parse()
 
     start_epoch, epoch_iter = 1, 0
@@ -89,14 +89,17 @@ def single_src_dir_dst(src_img_file_path, targetDir, outDir):
         img_dir_swap(targetDir, latend_id, model, app, pic_apath.name,temp_results_dir=outDir,\
             no_simswaplogo=opt.no_simswaplogo,use_mask=opt.use_mask,crop_size=crop_size,count=count_limit)
 
-def src_dir(indir,target_dir,output_dir, randomize_src_files = False):
+def src_dir(indir,target_dir,output_dir, randomize_src_files = False,trc = -1,selected_src_count=-1):
     src_img_files = [x for x in Path(indir).glob('*.jpg')]
+    
+    
     if randomize_src_files:
         shuffle(src_img_files)
+    
+    src_img_files = src_img_files[:selected_src_count]
     for imgFilePath in src_img_files:
-        single_src_dir_dst(imgFilePath,target_dir,output_dir)
+        single_src_dir_dst(imgFilePath,target_dir,output_dir,trc)
             
-
 if __name__ == '__main__':
     indir_global = r'D:\paradise\stuff\simswappg\srcs'
     # indir_global = r'D:\paradise\stuff\Essence\FS\all\Sluts'
