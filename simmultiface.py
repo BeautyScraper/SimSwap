@@ -391,7 +391,7 @@ def set_target_image(imgfiles, multisepcific_dir, target_dir_path, result_dir,cs
         setfilecontent = set([x.strip() for x in fs.readlines()])
         fs.close()
     # multifacewap = multifacewap_prepare(multisepcific_dir, str(imgfiles), result_dir)
-    face_swap_obj = faceswap(srcDir,str(imgfiles),result_dir)
+    face_swap_obj = faceswap(multisepcific_dir,str(imgfiles),result_dir)
     facesInImg = face_swap_obj.target_pic_face_count
     FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecontent,csvFile,face_swap_obj)    
                 
