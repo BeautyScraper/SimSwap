@@ -12,6 +12,9 @@ import numpy as np
 import glob
 import os
 import os.path as osp
+from pathlib import Path
+import hashlib
+import pickle
 import cv2
 from insightface.model_zoo import model_zoo
 from insightface_func.utils import face_align_ffhqandnewarc as face_align
@@ -29,6 +32,8 @@ Face.__new__.__defaults__ = (None, ) * len(Face._fields)
 
 class Face_detect_crop:
     def __init__(self, name, root='~/.insightface_func/models'):
+        self.detection_result_path_s = Path(r'C:\temp\detection_database')
+        self.detection_result_path_s.mkdir(exist_ok=True)
         self.models = {}
         root = os.path.expanduser(root)
         onnx_files = glob.glob(osp.join(root, name, '*.onnx'))
@@ -59,14 +64,29 @@ class Face_detect_crop:
                 model.prepare(ctx_id, input_size=det_size)
             else:
                 model.prepare(ctx_id)
-
     def get(self, img, crop_size, max_num=0):
+        m = hashlib.sha256()
+        filename = m.hexdigest()
+        ftc = self.detection_result_path_s / filename
+        
+        if not ftc.is_file():
+            fptc = open(ftc,'wb')
+            cont_to_save = self.get_real(img, crop_size, max_num=0)
+            pickle.dump(cont_to_save,fptc)
+        else:
+            fptc = open(ftc,'rb')
+            cont_to_save = pickle.load(fptc)
+        return cont_to_save
+            
+        
+    def get_real(self, img, crop_size, max_num=0):
         bboxes, kpss = self.det_model.detect(img,
                                              threshold=self.det_thresh,
                                              max_num=max_num,
                                              metric='default')
         if bboxes.shape[0] == 0:
             return None
+        import pdb;pdb.set_trace()
         # ret = []
         # for i in range(bboxes.shape[0]):
         #     bbox = bboxes[i, 0:4]
