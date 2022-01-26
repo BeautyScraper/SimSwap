@@ -92,15 +92,78 @@ app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640),mode = mode)
 
 class faceswap:
      def __init__(self,srcDir,DstDir,resulDir):
+        self.logoclass = watermark_image('./simswaplogo/simswaplogo.png')
         self.srcDir = Path(srcDir)
         self.DstDir = Path(DstDir)
         self.resulDir = Path(resulDir)
         self.model = create_model(opt)
         self.model.eval()
         self.target_id_norm_list = []
-        self.settargetidNorm()
+        self.srclist()
+        self.img_b_whole = cv2.imread(str(self.DstDir))
+        self.b_align_crop_tenor_list = []
+        self.b_mat_list = []
+        self.setDst_picList()
         
-     def settargetidNorm(self):
+     def do_fs_with_perm(self,swap_list=[]):
+        result_dir_path = str(self.resulDir)
+        multisepcific_dir = str(self.srcDir)
+        target_pic_path_s = str(self.DstDir)
+        
+        with torch.no_grad():
+            if swap_list == []:
+                min_indexs = list(range(0,len(self.b_align_crop_tenor_list)))[:len(self.target_id_norm_list)]
+            else:
+                min_indexs = swap_list
+                
+            swap_result_list = [] 
+            swap_result_matrix_list = []
+            swap_result_ori_pic_list = []
+            print(min_indexs)
+            for tmp_index, min_index in enumerate(min_indexs):
+                if min_index< len(self.target_id_norm_list) and min_index >= 0:
+                    swap_result = model_mem_g(self.model,self.b_align_crop_tenor_list,tmp_index,self.target_id_norm_list,min_index)
+                    # model.eval()
+                    # swap_result = model(None, b_align_crop_tenor_list[tmp_index], target_id_norm_list[min_index], None, True)[0]
+                    swap_result_list.append(swap_result)
+                    swap_result_matrix_list.append(self.b_mat_list[tmp_index])
+                    swap_result_ori_pic_list.append(self.b_align_crop_tenor_list[tmp_index])
+                else:
+                    pass
+
+            if len(swap_result_list) !=0:
+
+                if opt.use_mask:
+                    n_classes = 19
+                    net = BiSeNet(n_classes=n_classes)
+                    net.cuda()
+                    save_pth = os.path.join('./parsing_model/checkpoint', '79999_iter.pth')
+                    net.load_state_dict(torch.load(save_pth))
+                    net.eval()
+                else:
+                    net =None
+                Path(result_dir_path).mkdir(exist_ok=True)
+                resultFilePath = str(Path(result_dir_path) / ( Path(multisepcific_dir).name + Path(target_pic_path_s).stem + str(min_indexs) )) + '.jpg'
+                reverse2wholeimage(swap_result_ori_pic_list, swap_result_list, swap_result_matrix_list, crop_size, self.img_b_whole, self.logoclass,\
+                    resultFilePath, opt.no_simswaplogo,pasring_model =net,use_mask=opt.use_mask, norm = spNorm)
+
+                print(' ')
+
+                print('************ Done ! ************')
+     
+     def setDst_picList(self): 
+        self.b_mat_list.clear()
+        self.b_align_crop_tenor_list.clear()
+        with torch.no_grad():
+            img_b_whole = self.img_b_whole
+
+            img_b_align_crop_list, self.b_mat_list = app.get(img_b_whole,crop_size)
+            
+            for b_align_crop in img_b_align_crop_list:
+                b_align_crop_tenor = _totensor(cv2.cvtColor(b_align_crop,cv2.COLOR_BGR2RGB))[None,...].cuda()
+                self.b_align_crop_tenor_list.append(b_align_crop_tenor)
+     
+     def srclist(self):
         with torch.no_grad():
             target_path = os.path.join(str(self.srcDir),'*.jpg')
             target_images_path = sorted(glob.glob(target_path))
@@ -184,6 +247,7 @@ def multifacewap(multisepcific_dir, target_pic_path_s, result_dir_path,swap_list
         img_b_align_crop_list, b_mat_list = app.get(img_b_whole,crop_size)
         # detect_results = None
         swap_result_list = []
+
 
         id_compare_values = [] 
         b_align_crop_tenor_list = []
@@ -339,5 +403,6 @@ if __name__ == '__main__':
     srcDir = r'D:\paradise\stuff\simswappg\combinationSrc\known'
     target_dir = r'C:\Games\MultiFaces'
     result_dir = r'C:\Games\NextFaceresult'
-    x = faceswap(srcDir,target_dir,result_dir)
+    x = faceswap(srcDir,str(next(Path(target_dir).glob('*.jpg'))),result_dir)
+    x.do_fs_with_perm()
     # multiface_dir(srcDir,target_dir,result_dir)
