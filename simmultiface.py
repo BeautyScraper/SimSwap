@@ -68,7 +68,7 @@ def model_mem():
     return model_run
     
 opt = TestOptions().parse()
-model_mem_g = model_mem()
+# model_mem_g = model_mem()
 
 start_epoch, epoch_iter = 1, 0
 crop_size = opt.crop_size
@@ -91,24 +91,45 @@ app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640),mode = mode)
 
 
 class faceswap:
-     def __init__(self,srcDir,DstDir,resulDir):
+     def __init__(self,srcDir,target_pic_path_str='',resulDir=''):
         self.logoclass = watermark_image('./simswaplogo/simswaplogo.png')
         self.srcDir = Path(srcDir)
-        self.DstDir = Path(DstDir)
-        self.resulDir = Path(resulDir)
         self.model = create_model(opt)
         self.model.eval()
         self.target_id_norm_list = []
         self.srclist()
-        self.img_b_whole = cv2.imread(str(self.DstDir))
-        self.b_align_crop_tenor_list = []
-        self.b_mat_list = []
-        self.setDst_picList()
+        self.swap_result_list = {}
+        if not resulDir == '':
+            self.resulDir = Path(resulDir)
+        else:
+            self.resulDir = Path().cwd()
+        
+        if not target_pic_path_str == '':
+            self.set_for_target_pic(target_pic_path_str)
+            
+     def set_for_target_pic(self,target_pic_path_str):
+            self.swap_result_list.clear()
+            self.target_pic_path_str = Path(target_pic_path_str)
+            self.img_b_whole = cv2.imread(str(self.target_pic_path_str))
+            self.b_align_crop_tenor_list = []
+            self.b_mat_list = []
+            self.target_pic_face_count = -1
+            self.swap_result_list.clear()
+            self.setDst_picList()
+            
+     def model_run(self,b_align_crop_tenor_list,tmp_index,target_id_norm_list,min_index):
+        if (tmp_index,min_index) not in self.swap_result_list:
+            swap_result = self.model(None, b_align_crop_tenor_list[tmp_index], target_id_norm_list[min_index], None, True)[0]
+            self.swap_result_list[(tmp_index,min_index)] = swap_result
+        else:
+            print('alredy got it Don\'t Worry ',(tmp_index,min_index))
+            swap_result = self.swap_result_list[(tmp_index,min_index)]
+        return swap_result
         
      def do_fs_with_perm(self,swap_list=[]):
         result_dir_path = str(self.resulDir)
         multisepcific_dir = str(self.srcDir)
-        target_pic_path_s = str(self.DstDir)
+        target_pic_path_s = str(self.target_pic_path_str)
         
         with torch.no_grad():
             if swap_list == []:
@@ -121,8 +142,8 @@ class faceswap:
             swap_result_ori_pic_list = []
             print(min_indexs)
             for tmp_index, min_index in enumerate(min_indexs):
-                if min_index< len(self.target_id_norm_list) and min_index >= 0:
-                    swap_result = model_mem_g(self.model,self.b_align_crop_tenor_list,tmp_index,self.target_id_norm_list,min_index)
+                if min_index < len(self.target_id_norm_list) and min_index >= 0:
+                    swap_result = self.model_run(self.b_align_crop_tenor_list,tmp_index,self.target_id_norm_list,min_index)
                     # model.eval()
                     # swap_result = model(None, b_align_crop_tenor_list[tmp_index], target_id_norm_list[min_index], None, True)[0]
                     swap_result_list.append(swap_result)
@@ -162,6 +183,7 @@ class faceswap:
             for b_align_crop in img_b_align_crop_list:
                 b_align_crop_tenor = _totensor(cv2.cvtColor(b_align_crop,cv2.COLOR_BGR2RGB))[None,...].cuda()
                 self.b_align_crop_tenor_list.append(b_align_crop_tenor)
+        self.target_pic_face_count = len(self.b_align_crop_tenor_list)
      
      def srclist(self):
         with torch.no_grad():
@@ -314,7 +336,7 @@ def multifacewap(multisepcific_dir, target_pic_path_s, result_dir_path,swap_list
         swap_list.clear()
         return len(b_align_crop_tenor_list)
         # return actual_multi_faceswap
-def FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecontent,csvFile):    
+def FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecontent,csvFile,face_swap_obj):    
     facesinsrcdir = len([x for x in Path(multisepcific_dir).glob('*.jpg')])
     if facesinsrcdir <= facesInImg:
         swap_list = list(range(0,facesinsrcdir)) + [-1] * (facesInImg - facesinsrcdir)
@@ -330,7 +352,7 @@ def FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecon
         if checkCode in setfilecontent:
             continue
         try:
-            multifacewap(multisepcific_dir, str(imgfiles), result_dir, list(swaplist))
+            face_swap_obj.do_fs_with_perm(list(swaplist))
             # multifacewap()
             fs = open(csvFile, 'a+')
             fs.write('\n' + checkCode)
@@ -358,9 +380,10 @@ def set_target_image_mem(imgfiles, multisepcific_dir, target_dir_path, result_di
         print('Already done with this file')
         # fs = open(csvFile,'a+')
     
-def set_target_image(imgfiles, multisepcific_dir, target_dir_path, result_dir,csvFileLocationdir):
+def set_target_image(imgfiles, multisepcific_dir, target_dir_path, result_dir,csvFileLocationdir,):
     csvFile = csvFileLocationdir / (imgfiles.parent.name+'_'+imgfiles.name+ '.csv')
-
+    
+    
     if not csvFile.is_file():
         setfilecontent = set([])
     else:
@@ -368,31 +391,20 @@ def set_target_image(imgfiles, multisepcific_dir, target_dir_path, result_dir,cs
         setfilecontent = set([x.strip() for x in fs.readlines()])
         fs.close()
     # multifacewap = multifacewap_prepare(multisepcific_dir, str(imgfiles), result_dir)
-    if str(imgfiles) not in setfilecontent:
-        facesInImg = multifacewap(multisepcific_dir, str(imgfiles), result_dir)
-        fs = open(csvFile,'a+')
-        fs.write(str(imgfiles)+'@[%s]' % str(facesInImg))
-        fs.write('\n'+str(imgfiles)+'@[%s]' % str(list(range(0,facesInImg))))
-        fs.write('\n'+str(imgfiles))
-        fs.close()
-    else:
-        fs = open(csvFile,'r')
-        firstLine = fs.readline()
-        print(firstLine)
-        facesInImg = int(re.search('\@\[(\d+)\]',firstLine)[1])
-        fs.close()
-        # import pdb;pdb.set_trace()
-    FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecontent,csvFile)    
+    face_swap_obj = faceswap(srcDir,str(imgfiles),result_dir)
+    facesInImg = face_swap_obj.target_pic_face_count
+    FSon_permutation(multisepcific_dir,imgfiles,result_dir,facesInImg,setfilecontent,csvFile,face_swap_obj)    
                 
     
 def multiface_dir(multisepcific_dir, target_dir_path, result_dir):
     csvFileLocationdir = Path(multisepcific_dir) / 'MFSRecords'
     csvFileLocationdir.mkdir(exist_ok=True)
+    # face_swap_obj = faceswap(srcDir,'',result_dir)
     # permutationList = []
     for imgfiles in Path(target_dir_path).glob('*.jpg'):
     
         set_target_image_mem(imgfiles, multisepcific_dir, target_dir_path, result_dir,csvFileLocationdir)
-        model_mem_g(None,None,None,None,None,True)
+        # model_mem_g(None,None,None,None,None,True)
         
             
     
@@ -403,7 +415,12 @@ if __name__ == '__main__':
     srcDir = r'D:\paradise\stuff\simswappg\combinationSrc\known'
     target_dir = r'C:\Games\MultiFaces'
     result_dir = r'C:\Games\NextFaceresult'
-    x = faceswap(srcDir,str(next(Path(target_dir).glob('*.jpg'))),result_dir)
-    x.do_fs_with_perm()
-    x.do_fs_with_perm([1,0])
-    # multiface_dir(srcDir,target_dir,result_dir)
+    # files = Path(target_dir).glob('*.jpg')
+    # x = faceswap(srcDir,str(next(files)),result_dir)
+    # x.do_fs_with_perm()
+    # x.do_fs_with_perm([1,0])
+    # x.set_for_target_pic(str(next(files)))
+    # x.do_fs_with_perm()
+    
+    
+    multiface_dir(srcDir,target_dir,result_dir)
