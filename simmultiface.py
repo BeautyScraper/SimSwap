@@ -405,4 +405,5 @@ if __name__ == '__main__':
     result_dir = r'C:\Games\NextFaceresult'
     x = faceswap(srcDir,str(next(Path(target_dir).glob('*.jpg'))),result_dir)
     x.do_fs_with_perm()
+    x.do_fs_with_perm([1,0])
     # multiface_dir(srcDir,target_dir,result_dir)
