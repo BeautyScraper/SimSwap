@@ -64,35 +64,35 @@ def model_mem():
         return swap_result
     return model_run
     
+opt = TestOptions().parse()
 model_mem_g = model_mem()
 
+start_epoch, epoch_iter = 1, 0
+crop_size = opt.crop_size
+
+# multisepcific_dir = r'D:\paradise\stuff\simswappg\srcs'
+
+torch.nn.Module.dump_patches = True
+
+if crop_size == 512:
+    opt.which_epoch = 550000
+    opt.name = '512'
+    mode = 'ffhq'
+else:
+    mode = 'None'
+spNorm =SpecificNorm()
+
+
+app = Face_detect_crop(name='antelope', root='./insightface_func/models')
+app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640),mode = mode)
 def multifacewap(multisepcific_dir, target_pic_path_s, result_dir_path,swap_list=[]):
-    opt = TestOptions().parse()
     # print(swap_list)
-    start_epoch, epoch_iter = 1, 0
-    crop_size = opt.crop_size
-
-    # multisepcific_dir = r'D:\paradise\stuff\simswappg\srcs'
-    
-    torch.nn.Module.dump_patches = True
-
-    if crop_size == 512:
-        opt.which_epoch = 550000
-        opt.name = '512'
-        mode = 'ffhq'
-    else:
-        mode = 'None'
 
     logoclass = watermark_image('./simswaplogo/simswaplogo.png')
     model = create_model(opt)
     model.eval()
-    mse = torch.nn.MSELoss().cuda()
+    # mse = torch.nn.MSELoss().cuda()
 
-    spNorm =SpecificNorm()
-
-
-    app = Face_detect_crop(name='antelope', root='./insightface_func/models')
-    app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640),mode = mode)
 
     with torch.no_grad():
     
@@ -168,7 +168,7 @@ def multifacewap(multisepcific_dir, target_pic_path_s, result_dir_path,swap_list
         # if len(facesInImg)
         # import pdb;pdb.set_trace()
         if swap_list == []:
-            min_indexs = list(range(0,len(b_align_crop_tenor_list)))
+            min_indexs = list(range(0,len(b_align_crop_tenor_list)))[:len(target_id_norm_list)]
         else:
             min_indexs = swap_list
             
@@ -177,7 +177,7 @@ def multifacewap(multisepcific_dir, target_pic_path_s, result_dir_path,swap_list
         swap_result_ori_pic_list = []
         print(min_indexs)
         for tmp_index, min_index in enumerate(min_indexs):
-            if True and min_index >= 0:
+            if min_index< len(target_id_norm_list) and min_index >= 0:
                 swap_result = model_mem_g(model,b_align_crop_tenor_list,tmp_index,target_id_norm_list,min_index)
                 model.eval()
                 # swap_result = model(None, b_align_crop_tenor_list[tmp_index], target_id_norm_list[min_index], None, True)[0]
