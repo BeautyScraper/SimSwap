@@ -92,11 +92,12 @@ def single_src_dir_dst(src_img_file_path, targetDir, outDir,count_limit = -1):
 def src_dir(indir,target_dir,output_dir, randomize_src_files = False,trc = -1,selected_src_count=-1):
     src_img_files = [x for x in Path(indir).glob('*.jpg')]
     
-    
     if randomize_src_files:
         shuffle(src_img_files)
     
-    src_img_files = src_img_files[:selected_src_count]
+    if not selected_src_count == -1:
+        src_img_files = src_img_files[:selected_src_count]
+        # selected_src_count = 
     for imgFilePath in src_img_files:
         single_src_dir_dst(imgFilePath,target_dir,output_dir,trc)
             
