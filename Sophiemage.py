@@ -36,7 +36,7 @@ def _totensor(array):
     img = tensor.transpose(0, 1).transpose(0, 2).contiguous()
     return img.float().div(255)
     
-def dofsmage(srcfileps,targetfps):
+def dofsmage(srcfileps,targetfps,resultfp=""):
     opt = TestOptions().parse()
     opt.pic_a_path = srcfileps
     opt.pic_b_path = targetfps
@@ -109,9 +109,11 @@ def dofsmage(srcfileps,targetfps):
             net.eval()
         else:
             net =None
-        outputdir = Path(r'D:\Developed\FaceSwapExperimental\TestResult')
-        opt.output_path = str(outputdir / (Path(srcfileps).stem + Path(targetfps).stem + '.jpg'))
-        
+        if resultfp == "":
+            outputdir = Path(r'D:\Developed\FaceSwapExperimental\TestResult')
+            opt.output_path = str(outputdir / (Path(srcfileps).stem + Path(targetfps).stem + '.jpg'))
+        else:
+            opt.output_path = resultfp
         reverse2wholeimage(b_align_crop_tenor_list, swap_result_list, b_mat_list, crop_size, img_b_whole, logoclass, \
             opt.output_path, opt.no_simswaplogo,pasring_model =net,use_mask=opt.use_mask, norm = spNorm)
 
