@@ -26,6 +26,7 @@ if __name__ == "__main__":
         if tes_dir.is_dir():
             dstFileList = [x for x in tes_dir.glob('*.mp4')]
             shuffle(dstFileList)
-            single_src(imgFIles,dstFileList,respath_g)
+            single_src(imgFIles,dstFileList,respath_g,testsrc_times=-1,delete_target_when_done=True)
+            
     # setSrc_setDst(srcimgdir_g,dstvideodir_g,respath_g)
     

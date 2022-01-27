@@ -91,7 +91,7 @@ def spicoutvid(inimgpath,vpath,rpath):
         video_swap(vpath, latend_id, model, app, opt.output_path,temp_results_dir=opt.temp_path,\
             no_simswaplogo=opt.no_simswaplogo,use_mask=opt.use_mask,crop_size=crop_size)
             
-def single_src(imgFiles, dstFileList, respath,testsrc_times=-1):
+def single_src(imgFiles, dstFileList, respath,testsrc_times=-1,delete_target_when_done=False):
       parentdir = imgFiles.parent / 'VFsRecords'
       parentdir.mkdir(exist_ok=True)  
       dbfilename = parentdir / (imgFiles.stem+'.csv')
@@ -111,11 +111,15 @@ def single_src(imgFiles, dstFileList, respath,testsrc_times=-1):
                 donedata = open(dbfilename, 'a+')
                 donedata.write('\n'+ str(vidFIle)) 
                 donedata.close()
+                if delete_target_when_done:
+                    vidFIle.unlink()
                 tsc -= 1
             except Exception as e:
                 print(str(imgFiles), str(vidFIle), e)
             # sleep(1000)
           else:
+            if delete_target_when_done:
+                vidFIle.unlink()
             print('already done')
             continue       
 
