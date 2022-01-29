@@ -24,7 +24,7 @@ if __name__ == "__main__":
         tes_dir = dstvideodir_g / (imgFIles.stem + '_video')
         # import pdb;pdb.set_trace()
         if tes_dir.is_dir():
-            dstFileList = [x for x in tes_dir.glob('*.mp4')]
+            dstFileList = [x for x in tes_dir.glob('*.m[pk][4v]')]
             shuffle(dstFileList)
             single_src(imgFIles,dstFileList,respath_g,testsrc_times=-1,delete_target_when_done=True)
             
