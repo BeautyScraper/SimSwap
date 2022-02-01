@@ -142,7 +142,7 @@ if __name__ == '__main__':
     # dstvideodir = Path(r'D:\paradise\stuff\Images\Champions')
     # dstvideodir = Path(r'D:\paradise\stuff\new\imageset\Killergram Black cock perfection - starring Harleyy Heart - published 11 December 2021 - number of photos 83')
     # dstvideodir = Path(r'C:\Heaven\YummyBaker')
-    dstvideodir = Path(r'D:\paradise\stuff\Essence\Images\Considerable')
+    dstvideodir = Path(r'D:\paradise\stuff\essence\Pictures\Considerable')
     # dstvideodir = Path(r'D:\paradise\stuff\simswappg\trialTargets')
     # dstvideodir = Path(r'C:\GalImgs\BabesImgs')
     # dstvideodir = Path(r'D:\paradise\stuff\Images\Best\too hot')

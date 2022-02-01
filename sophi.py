@@ -141,7 +141,9 @@ def setSrc_setDst(srcimgdir,dstvideodir,respath):
             
 if __name__ == "__main__":
     srcimgdir_g = Path(r'D:\paradise\stuff\simswappg\srcs')
-    dstvideodir_g = Path(r'D:\paradise\stuff\new\PVD\Yummyx (17)_video')
+    # dstvideodir_g = Path(r'D:\Developed\VFS\RandyVideo\DoThis')
+    # dstvideodir_g = Path(r'D:\Developed\VFS\RandyVideo\done')
+    dstvideodir_g = Path(r'D:\paradise\stuff\essence\HayaKeSath')
     respath_g = Path(r'D:\Developed\VFS\RandyVideo\xdivision')
     setSrc_setDst(srcimgdir_g,dstvideodir_g,respath_g)
     
